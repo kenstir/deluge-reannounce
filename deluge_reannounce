@@ -1,0 +1,15 @@
+#!/bin/bash
+
+cd `dirname $0`
+
+if [ -r /config/auth ]; then
+    # take the user/pass from the last admin-level in the file
+    export DELUGE_USER=$(tac /config/auth | awk -F: '$3=="10" {print $1; exit}')
+    export DELUGE_PASS=$(tac /config/auth | awk -F: '$3=="10" {print $2; exit}')
+fi
+if [ -r /config/core.conf ]; then
+    export DELUGE_HOST='127.0.0.1'
+    export DELUGE_PORT=$(cat /config/core.conf | jq -s '.[1].daemon_port')
+fi
+
+python deluge_reannounce.py "$@" >>reannounce.log 2>&1
