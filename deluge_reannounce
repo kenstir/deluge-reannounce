@@ -3,6 +3,17 @@
 cd `dirname $0`
 export PYTHONPATH="$PWD/lib/deluge-client"
 
+# handle command line
+verbose=
+while getopts "v" option; do
+    case $option in
+    v) verbose=y;;
+    *) exit 1;;
+    esac
+done
+shift $((OPTIND-1))
+
+# if run inside an lsio container, then we already have the auth
 if [ -r /config/auth ]; then
     # take the user/pass from the last admin-level in the file
     export DELUGE_USER=$(tac /config/auth | awk -F: '$3=="10" {print $1; exit}')
@@ -13,4 +24,8 @@ if [ -r /config/core.conf ]; then
     export DELUGE_PORT=$(cat /config/core.conf | jq -s '.[1].daemon_port')
 fi
 
-python deluge_reannounce.py "$@" >>reannounce.log 2>&1
+if [ -n "$verbose" ]; then
+    python deluge_reannounce.py "$@"
+else
+    python deluge_reannounce.py "$@" >>reannounce.log 2>&1
+fi
