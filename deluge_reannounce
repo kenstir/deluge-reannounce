@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd `dirname $0`
+export PYTHONPATH="$PWD/lib/deluge-client"
 
 if [ -r /config/auth ]; then
     # take the user/pass from the last admin-level in the file
