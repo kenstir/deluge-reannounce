@@ -20,12 +20,18 @@ username = os.getenv('DELUGE_USER', 'admin')
 password = os.getenv('DELUGE_PASS', 'deluge')
 
 # Set up loop parameters
-max_iterations = 120
+max_iterations = 60
 iteration_interval = 7
 
 
-# TODO: disable printing unless VERBOSE
+# debug print
+# TODO: real logging with levels
 def dprint(msg):
+    log_notice(msg)
+
+
+# print notice-level message
+def log_notice(msg):
     now = time.localtime()
     hms = time.strftime('%H:%M:%S', now)
     id_short = torrent_id[:7]
@@ -40,9 +46,9 @@ dprint(f'Connected')
 
 # Loop for a maximum number of iterations
 for i in range(max_iterations):
-    
+
     # Sleep for the iteration interval
-    dprint(f'i={i} Sleeping {iteration_interval} ...')
+    dprint(f'i={i} Sleep {iteration_interval} ...')
     time.sleep(iteration_interval)
 
     # Get torrent information
@@ -51,14 +57,28 @@ for i in range(max_iterations):
 
     # Check if the torrent is found
     if not torrent_info:
-        print("Torrent not found or removed.")
+        log_notice('Torrent not found or removed.')
+        break
+
+    # Print a bunch of stuff for debugging
+    dprint(f'i={i} torrent_info={torrent_info}')
+    progress = torrent_info.get(b'progress', 0.0)
+    total_payload_download = torrent_info.get(b'total_payload_download', 0)
+    total_payload_upload = torrent_info.get(b'total_payload_upload', 0)
+    dprint(f'i={i} total_payload_upload={total_payload_upload} total_payload_download={total_payload_download} progress={progress}')
+    trackers = torrent_info.get(b'trackers', ())
+    dprint(f'i={i} trackers={trackers}')
+
+    # Bail if complete
+    if torrent_info.get(b'is_finished', True):
+        log_notice('Torrent is finished.')
         break
 
     # Get tracker status
     tracker_status = torrent_info.get(b'tracker_status', b'').decode('utf-8')
     dprint(f'i={i} tracker_status={tracker_status}')
 
-    if 'Error: Too Many Requests' in tracker_status:
+    if 'Too Many Requests' in tracker_status:
         # Slow down, cowboy
         dprint(f'i={i} Backing off')
         pass
@@ -70,11 +90,10 @@ for i in range(max_iterations):
         # Get seed information
         seeds = torrent_info.get(b'num_seeds', 0)
         total_seeds = torrent_info.get(b'total_seeds', 0)
+        dprint(f'i={i} num_seeds={seeds} total_seeds={total_seeds}')
 
         # If there are seeds, perform additional reannounces
         if seeds > 0 or total_seeds > 0:
-            dprint(f'i={i} num_seeds={seeds} total_seeds={total_seeds}')
-
             extra_iterations = 2
             extra_interval = 30
 
