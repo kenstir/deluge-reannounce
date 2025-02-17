@@ -3,6 +3,7 @@
 # pip install deluge-client
 
 from __future__ import print_function
+import os
 import sys
 import time
 from deluge_client import DelugeRPCClient
@@ -13,10 +14,10 @@ torrent_name = sys.argv[2]
 torrent_path = sys.argv[3]
 
 # Set up Deluge RPC client connection details
-ip = "127.0.0.1"
-port = 11111  # Change this to your Deluge daemon port
-username = "str0ke"  # Change this to your Deluge username
-password = "password"  # Change this to your Deluge password
+ip = os.getenv('DELUGE_HOST', "127.0.0.1")
+port = int(os.getenv('DELUGE_PORT', 58846))
+username = os.getenv('DELUGE_USER', 'admin')
+password = os.getenv('DELUGE_PASS', 'deluge')
 
 # Set up loop parameters
 max_iterations = 120
