@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-# pip install deluge-client
-
-from __future__ import print_function
+import json
 import os
 import sys
 import time
@@ -38,6 +36,36 @@ def log_notice(msg):
     print(f'[{hms}] {id_short} {msg}')
 
 
+def convert_bytes_to_strings(o):
+    """Converts all bytes in a nested object to strings
+
+    Deluge RPC returns bytes for keys and values in dictionaries.
+    """
+    if isinstance(o, dict):
+        new_o = {}
+        for k, v in o.items():
+            if isinstance(k, bytes):
+                new_k = k.decode('utf-8')
+            else:
+                new_k = k
+            new_o[new_k] = convert_bytes_to_strings(v) # Recursively handle nested objects
+        return new_o
+    elif isinstance(o, list):
+        return [convert_bytes_to_strings(item) for item in o]
+    elif isinstance(o, tuple):
+        return tuple([convert_bytes_to_strings(item) for item in o])
+    elif isinstance(o, bytes):
+        return o.decode('utf-8')
+    else:
+        return o
+
+
+def dump_torrent_info(torrent_info):
+    info = convert_bytes_to_strings(torrent_info)
+    pretty_info = json.dumps(info, indent=4)
+    dprint(f'i={i} info={pretty_info}')
+
+
 # Connect to the Deluge RPC client
 dprint(f'Connecting to {ip}:{port} as user {username}')
 client = DelugeRPCClient(ip, port, username, password)
@@ -61,13 +89,11 @@ for i in range(max_iterations):
         break
 
     # Print a bunch of stuff for debugging
-    dprint(f'i={i} torrent_info={torrent_info}')
+    dump_torrent_info(torrent_info)
     progress = torrent_info.get(b'progress', 0.0)
     total_payload_download = torrent_info.get(b'total_payload_download', 0)
     total_payload_upload = torrent_info.get(b'total_payload_upload', 0)
-    dprint(f'i={i} total_payload_upload={total_payload_upload} total_payload_download={total_payload_download} progress={progress}')
-    trackers = torrent_info.get(b'trackers', ())
-    dprint(f'i={i} trackers={trackers}')
+    dprint(f'i={i} progress={progress} down={total_payload_download} up={total_payload_upload}')
 
     # Bail if complete
     if torrent_info.get(b'is_finished', True):
@@ -93,6 +119,7 @@ for i in range(max_iterations):
         dprint(f'i={i} num_seeds={seeds} total_seeds={total_seeds}')
 
         # If there are seeds, perform additional reannounces
+        # (but why???)
         if seeds > 0 or total_seeds > 0:
             extra_iterations = 2
             extra_interval = 30
