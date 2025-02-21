@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# deluge_reannounce - ensure torrent in good health after starting
+#
+#       This shell script wraps deluge_reannounce.py and logs output to reannounce.log
+#
+# usage: deluge_reannounce $torrent_id $torrent_name $torrent_path
 
 cd `dirname $0`
 export PYTHONPATH="$PWD/lib/deluge-client"
