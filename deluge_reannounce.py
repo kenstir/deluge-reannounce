@@ -62,7 +62,11 @@ def convert_bytes_to_strings(o):
 
 def dump_torrent_info(torrent_info):
     info = convert_bytes_to_strings(torrent_info)
-    pretty_info = json.dumps(info, indent=4)
+    sparse_info = {k: v for k, v in info.items() if k in [
+        'active_time', 'all_time_download', 'is_finished', 'message', 'next_announce', 'num_peers', 'num_seeds',
+        'progress', 'state', 'total_payload_download', 'total_payload_upload', 'total_peers', 'total_seeds',
+        'tracker_status', 'time_since_download', 'time_since_upload']}
+    pretty_info = json.dumps(sparse_info, indent=4)
     dprint(f'i={i} info={pretty_info}')
 
 
