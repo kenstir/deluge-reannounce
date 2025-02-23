@@ -8,8 +8,14 @@ Use this with the Execute plugin to be called on the Torrent Added event.
 
 ## Usage
 
+From the shell:
 ```
 /path/deluge-reannounce/reannounce torrent_id torrent_name save_path
+```
+
+From the Deluge Execute plugin:
+```
+/path/deluge-reannounce/reannounce
 ```
 
 The arguments `torrent_id`, `torrent_name`, and `save_path` are added automatically
