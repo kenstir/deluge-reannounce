@@ -21,6 +21,7 @@ when called from the Deluge Execute plugin on the Torrent Added event.
 If you run the script inside the [LinuxServer.io docker container](https://docs.linuxserver.io/images/docker-deluge/),
 then there is no configuration needed.  Otherwise, set the following variables in the environment:
 
+| ------------- | --------------------------------------- |
 | `DELUGE_HOST` | hostname or IP address of Deluge server |
 | `DELUGE_PORT` | RPC port number                         |
 | `DELUGE_USER` | username |
