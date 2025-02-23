@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 #
-# deluge_reannounce - ensure torrent in good health after starting
+# deluge_reannounce - loop and reannounce until torrent in good health after starting
+#
+#     Derived from xx
+#     which was probably derived from xx
 #
 # usage: deluge_reannounce.py $torrent_id $torrent_name $torrent_path
 

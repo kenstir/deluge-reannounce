@@ -1,10 +1,14 @@
 #!/bin/bash
 #
-# deluge_reannounce - ensure torrent in good health after starting
+# deluge_reannounce - loop and reannounce until torrent in good health after starting
 #
 #       This shell script wraps deluge_reannounce.py and logs output to reannounce.log
 #
-# usage: deluge_reannounce $torrent_id $torrent_name $torrent_path
+# usage: deluge_reannounce [-v] $torrent_id $torrent_name $torrent_path
+#
+# options:
+#       -v      verbose; do not redirect the output to reannounce.log
+#
 
 cd `dirname $0`
 export PYTHONPATH="$PWD/lib/deluge-client"
@@ -19,7 +23,7 @@ while getopts "v" option; do
 done
 shift $((OPTIND-1))
 
-# if run inside an lsio container, then we already have the auth
+# if run inside an lsio container, then we have the auth in /config
 if [ -r /config/auth ]; then
     # take the user/pass from the last admin-level in the file
     export DELUGE_USER=$(tac /config/auth | awk -F: '$3=="10" {print $1; exit}')
