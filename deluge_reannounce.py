@@ -32,6 +32,8 @@ def main():
     # Set up loop parameters
     max_iterations = 60
     iteration_interval = 7
+    extra_iterations = 2
+    extra_interval = 30
 
     # Connect to the Deluge RPC client
     log_debug(f'Connecting to {ip}:{port} as user {username}')
@@ -72,9 +74,9 @@ def main():
         tracker_status = torrent_info.get(b'tracker_status', b'').decode('utf-8')
         log_notice(f'i={i} tracker_status={tracker_status}')
 
-        if 'Too Many Requests' in tracker_status:
+        if any(substr in tracker_status for substr in ['Announce Sent', 'Too Many Requests']):
             # Slow down, cowboy
-            log_notice(f'i={i} Backing off')
+            log_notice(f'i={i} Holding off')
             pass
         elif any(substr in tracker_status for substr in ['unregistered', 'Sent', 'End of file', 'Bad Gateway', 'Error']):
             # Force reannounce if tracker status indicates an issue
@@ -87,11 +89,8 @@ def main():
             log_notice(f'i={i} num_seeds={seeds} total_seeds={total_seeds}')
 
             # If there are seeds, perform additional reannounces
-            # (but why???)
+            # (but why??? because upstream did it that's why)
             if seeds > 0 or total_seeds > 0:
-                extra_iterations = 2
-                extra_interval = 30
-
                 for j in range(extra_iterations):
                     log_debug(f'i={i} j={j} Sleeping {extra_interval}')
                     time.sleep(extra_interval)
@@ -123,8 +122,7 @@ def log_notice(msg):
 
 
 def log_msg(msg):
-    now = time.localtime()
-    hms = time.strftime('%H:%M:%S', now)
+    hms = time.strftime('%Y-%m-%d %H:%M:%S')
     id_short = torrent_id[:7]
     print(f'[{hms}] {id_short} {msg}')
 
