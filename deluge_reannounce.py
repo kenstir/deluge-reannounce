@@ -18,6 +18,9 @@ torrent_id = ''
 
 def main():
     # Get command line arguments for torrent ID, name, and path
+    if len(sys.argv) != 4:
+        print('usage: deluge_reannounce torrent_id torrent_name torrent_path')
+        exit(1)
     global torrent_id
     torrent_id = sys.argv[1]
     torrent_name = sys.argv[2]
@@ -58,7 +61,7 @@ def main():
             break
 
         # Print a bunch of stuff for debugging
-        info = dump_torrent_info(torrent_info)
+        info = debug_torrent_info(torrent_info)
         log_debug(f'i={i} info={info}')
         progress = torrent_info.get(b'progress', 0.0)
         total_payload_download = torrent_info.get(b'total_payload_download', 0)
@@ -151,7 +154,7 @@ def convert_bytes_to_strings(o):
         return o
 
 
-def dump_torrent_info(torrent_info):
+def debug_torrent_info(torrent_info):
     info = convert_bytes_to_strings(torrent_info)
     sparse_info = {k: v for k, v in info.items() if k in [
         'active_time', 'all_time_download', 'is_finished', 'message', 'next_announce', 'num_peers', 'num_seeds',
